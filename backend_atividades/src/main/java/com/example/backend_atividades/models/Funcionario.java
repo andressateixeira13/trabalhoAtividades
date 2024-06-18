@@ -17,7 +17,6 @@ public class Funcionario {
     private String senha;
     private String setor;
 
-    // Getters e Setters
     public Long getCodFunc() {
         return codFunc;
     }

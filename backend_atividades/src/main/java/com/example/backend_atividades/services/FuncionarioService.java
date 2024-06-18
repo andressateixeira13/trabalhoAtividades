@@ -1,6 +1,5 @@
 package com.example.backend_atividades.services;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.backend_atividades.models.Funcionario;
@@ -10,23 +9,25 @@ import java.util.Optional;
 
 @Service
 public class FuncionarioService {
-    @Autowired
-    private FuncionarioRepository funcionarioRepository;
+    private final FuncionarioRepository funcionarioRepository;
 
-    public Funcionario autenticar(String cpf, String senha) {
+    public FuncionarioService(FuncionarioRepository funcionarioRepository) {
+        this.funcionarioRepository = funcionarioRepository;
+    }
+
+   /* public Funcionario autenticar(String cpf, String senha) {
         Funcionario funcionario = funcionarioRepository.findByCpf(cpf);
         if (funcionario != null && funcionario.getSenha().equals(senha)) {
             return funcionario;
         }
         return null;
-    }
+    }*/
 
     public Funcionario cadastrar(Funcionario funcionario) {
-
         return funcionarioRepository.save(funcionario);
     }
 
-    public Funcionario updateFuncionario(Long id, Funcionario updatedFuncionario) {
+   /* public Funcionario updateFuncionario(Long id, Funcionario updatedFuncionario) {
         Optional<Funcionario> optionalFuncionario = funcionarioRepository.findById(id);
         if (optionalFuncionario.isPresent()) {
             Funcionario funcionario = optionalFuncionario.get();
@@ -38,6 +39,5 @@ public class FuncionarioService {
         } else {
             throw new RuntimeException("Funcionário não encontrado");
         }
-    }
+    }*/
 }
-
