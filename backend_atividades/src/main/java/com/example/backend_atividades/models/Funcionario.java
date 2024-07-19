@@ -1,21 +1,34 @@
 package com.example.backend_atividades.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
+import jakarta.persistence.*;
 
 @Entity
 public class Funcionario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codFunc;
+
     private String nome;
+
     private String cpf;
+
     private String cargo;
+
     private String senha;
+
     private String setor;
+
+    private String permissao;
+
+    private String email;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     public Long getCodFunc() {
         return codFunc;
@@ -63,5 +76,13 @@ public class Funcionario {
 
     public void setSetor(String setor) {
         this.setor = setor;
+    }
+
+    public String getPermissao() {
+        return permissao;
+    }
+
+    public void setPermissao(String permissao) {
+        this.permissao = permissao;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.backend_atividades.config;
 
+import com.example.backend_atividades.services.AutenticacaoService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

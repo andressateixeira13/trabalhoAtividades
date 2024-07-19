@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface AtividadeRepository extends JpaRepository<Atividade, Long> {
 
-    @Query("SELECT a FROM Atividade a WHERE a.funcionario.id = :idFuncionario")
-    List<Atividade> findByFuncionarioId(@Param("idFuncionario") Long idFuncionario);
+    @Query("SELECT a FROM Atividade a, Funcionario f WHERE a.funcionario.cpf = :cpfFuncionario")
+    List<Atividade> findByFuncionarioCpf(@Param("cpfFuncionario") String cpfFuncionario);
 }

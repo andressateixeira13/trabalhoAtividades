@@ -1,5 +1,6 @@
-package com.example.backend_atividades.config;
+package com.example.backend_atividades.services;
 
+import com.example.backend_atividades.models.Funcionario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,12 +22,14 @@ public class AutenticacaoService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var funcionario = funcionarioRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + username));
-        return User.builder()
-                .username(funcionario.getUsername())
-                .password(funcionario.getPassword())
-                .roles(funcionario.getRole()) // Ajuste conforme o seu modelo de Funcionario
-                .build();
+        Funcionario usuario = this.funcionarioRepository.findByCpf(username);
+        if (usuario ==null){
+            throw new UsernameNotFoundException("Usuário ou senha incorretos");
+        }
+        else {
+            UserDetails user = User.withUsername(usuario.getCpf()).password(usuario.getSenha())
+                    .authorities(usuario.getPermissao()).build();
+            return user;
+        }
     }
 }

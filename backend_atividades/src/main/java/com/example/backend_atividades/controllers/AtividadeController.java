@@ -39,8 +39,16 @@ public class AtividadeController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/funcionario/{idFuncionario}")
-    public List<Atividade> listarAtividadesPorFuncionario(@PathVariable Long idFuncionario) {
-        return atividadeService.listarAtividadesPorFuncionario(idFuncionario);
+    @GetMapping("/funcionario/{cpfFuncionario}")
+    public ResponseEntity<List<Atividade>> listarAtividadesPorFuncionario(@PathVariable String cpfFuncionario) {
+        System.out.println("Buscando atividades para o CPF: " + cpfFuncionario);
+        List<Atividade> atividades = atividadeService.listarAtividadesPorFuncionario(cpfFuncionario);
+        System.out.println(atividades);
+        if (atividades.isEmpty()) {
+            System.out.println("Nenhuma atividade encontrada para o CPF: " + cpfFuncionario);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(atividades);
     }
+
 }

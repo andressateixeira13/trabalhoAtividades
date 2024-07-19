@@ -22,7 +22,9 @@ CREATE TABLE Funcionario (
                              cpf VARCHAR(11) UNIQUE NOT NULL,
                              cargo VARCHAR(50) NOT NULL,
                              senha VARCHAR(255) NOT NULL,
-                             setor VARCHAR(50) NOT NULL
+                             setor VARCHAR(50) NOT NULL,
+                             permissao VARCHAR(50) NOT NULL,
+                             email VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE Atividade (

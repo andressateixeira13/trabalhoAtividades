@@ -31,7 +31,16 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/funcionario").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/funcionarios").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/funcionarios").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/ambiente").hasAnyAuthority("ROLE_GESTOR")
+                        .requestMatchers(HttpMethod.GET, "/ambiente").hasAnyAuthority("ROLE_FUNCIONARIO", "ROLE_GESTOR")
+                        .requestMatchers(HttpMethod.POST, "/atividades").hasAnyAuthority("ROLE_GESTOR")
+                        .requestMatchers(HttpMethod.GET, "/atividades").hasAnyAuthority("ROLE_FUNCIONARIO", "ROLE_GESTOR")
+                        .requestMatchers(HttpMethod.GET, "/atividades/**").hasAnyAuthority("ROLE_FUNCIONARIO", "ROLE_GESTOR")
+                        .requestMatchers(HttpMethod.POST, "/retorno").hasAnyAuthority("ROLE_GESTOR")
+                        .requestMatchers(HttpMethod.GET, "/retorno").hasAnyAuthority("ROLE_FUNCIONARIO", "ROLE_GESTOR")
+                        .requestMatchers(HttpMethod.POST, "/tipoAtividade").hasAnyAuthority("ROLE_GESTOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(this.autenticacaoFilter, UsernamePasswordAuthenticationFilter.class);

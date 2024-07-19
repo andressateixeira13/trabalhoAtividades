@@ -22,7 +22,6 @@ public class Ambiente {
     private String predio;
     private String setor;
 
-    // getters e setters
 
     public Long getCodAmb() {
         return codAmb;

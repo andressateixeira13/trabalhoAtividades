@@ -1,11 +1,12 @@
 package com.example.backend_atividades.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.backend_atividades.models.DadosUsuario;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.backend_atividades.models.Funcionario;
 import com.example.backend_atividades.repositories.FuncionarioRepository;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 public class FuncionarioService {
@@ -15,29 +16,26 @@ public class FuncionarioService {
         this.funcionarioRepository = funcionarioRepository;
     }
 
-   /* public Funcionario autenticar(String cpf, String senha) {
+   public Funcionario autenticar(String cpf, String senha) {
         Funcionario funcionario = funcionarioRepository.findByCpf(cpf);
         if (funcionario != null && funcionario.getSenha().equals(senha)) {
             return funcionario;
         }
         return null;
-    }*/
-
-    public Funcionario cadastrar(Funcionario funcionario) {
-        return funcionarioRepository.save(funcionario);
     }
 
-   /* public Funcionario updateFuncionario(Long id, Funcionario updatedFuncionario) {
-        Optional<Funcionario> optionalFuncionario = funcionarioRepository.findById(id);
-        if (optionalFuncionario.isPresent()) {
-            Funcionario funcionario = optionalFuncionario.get();
-            funcionario.setNome(updatedFuncionario.getNome());
-            funcionario.setCargo(updatedFuncionario.getCargo());
-            funcionario.setSenha(updatedFuncionario.getSenha());
-            funcionario.setSetor(updatedFuncionario.getSetor());
-            return funcionarioRepository.save(funcionario);
-        } else {
-            throw new RuntimeException("Funcionário não encontrado");
-        }
-    }*/
+    public void cadastrar(Funcionario funcionario) {
+        funcionario.setSenha(new BCryptPasswordEncoder().encode(funcionario.getSenha()));
+        this.funcionarioRepository.save(funcionario);
+    }
+
+   public DadosUsuario findFuncionario(Long cod){
+        Funcionario funcionario = this.funcionarioRepository.getReferenceById(cod);
+        return new DadosUsuario(funcionario);
+   }
+
+   public List<DadosUsuario> findAllFuncionarios(){
+        return this.funcionarioRepository.findAll().stream().map(DadosUsuario::new).toList();
+   }
+
 }

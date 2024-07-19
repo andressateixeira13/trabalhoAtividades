@@ -18,15 +18,15 @@ public class Atividade {
     private LocalDate data;
 
     @ManyToOne
-    @JoinColumn(name = "tipo_atividade_id")
+    @JoinColumn(name = "tipo_atividade_id", nullable = false)
     private TipoAtividade tipoAtividade;
 
     @ManyToOne
-    @JoinColumn(name = "funcionario_id")
+    @JoinColumn(name = "funcionario_id", nullable = false)
     private Funcionario funcionario;
 
     @ManyToOne
-    @JoinColumn(name = "ambiente_id")
+    @JoinColumn(name = "ambiente_id", nullable = false)
     private Ambiente ambiente;
 
     public Atividade() {

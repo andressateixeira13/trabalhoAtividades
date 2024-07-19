@@ -30,7 +30,7 @@ public class AtividadeService {
         atividadeRepository.deleteById(id);
     }
 
-    public List<Atividade> listarAtividadesPorFuncionario(Long idFuncionario) {
-        return atividadeRepository.findByFuncionarioId(idFuncionario);
+    public List<Atividade> listarAtividadesPorFuncionario(String cpfFuncionario) {
+        return atividadeRepository.findByFuncionarioCpf(cpfFuncionario);
     }
 }

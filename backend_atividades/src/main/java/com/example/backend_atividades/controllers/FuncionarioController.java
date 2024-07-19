@@ -1,36 +1,39 @@
 package com.example.backend_atividades.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.backend_atividades.models.DadosUsuario;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.backend_atividades.models.Funcionario;
 import com.example.backend_atividades.services.FuncionarioService;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/funcionarios")
+@RequestMapping("/funcionarios")
 public class FuncionarioController {
-    @Autowired
-    private FuncionarioService funcionarioService;
-
-    /*@PostMapping("/login")
-    public ResponseEntity<Funcionario> login(@RequestBody Funcionario loginRequest) {
-        Funcionario funcionario = funcionarioService.autenticar(loginRequest.getCpf(), loginRequest.getSenha());
-        if (funcionario != null) {
-            return ResponseEntity.ok(funcionario);
-        } else {
-            return ResponseEntity.status(401).build();
-        }
-    }*/
-
-    @PostMapping("/cadastrar")
-    public ResponseEntity cadastrar(@RequestBody Funcionario novoFuncionario) {
-        funcionarioService.cadastrar(novoFuncionario);
-        return ResponseEntity.ok("Novo funcionário cadastrado com sucesso!");
+    private final FuncionarioService funcionarioService;
+    public FuncionarioController(FuncionarioService service){
+        this.funcionarioService = service;
     }
-/*
-    @PutMapping("/{id}")
-    public Funcionario updateFuncionario(@PathVariable Long id, @RequestBody Funcionario funcionario) {
-        return funcionarioService.updateFuncionario(id, funcionario);
-    }*/
+
+    @PostMapping
+    public ResponseEntity cadastrar(@RequestBody @Valid Funcionario novoFuncionario, UriComponentsBuilder uriBuilder) {
+        this.funcionarioService.cadastrar(novoFuncionario);
+        URI uri = uriBuilder.path("/{cod}").buildAndExpand(novoFuncionario.getCodFunc()).toUri();
+        return ResponseEntity.created(uri).body(novoFuncionario);
+    }
+
+    @GetMapping("{cod}")
+    public DadosUsuario findById(@PathVariable Long cod){
+        return this.funcionarioService.findFuncionario(cod);
+    }
+
+    @GetMapping("/list")
+    public List<DadosUsuario> findAll(){
+        return this.funcionarioService.findAllFuncionarios();
+    }
 
 }
