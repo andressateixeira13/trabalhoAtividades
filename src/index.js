@@ -3,6 +3,6 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import axios from 'axios';
 
-axios.defaults.baseURL = 'http://localhost:8080'; // URL do seu backend Spring Boot
+axios.defaults.baseURL = 'http://localhost:8080'; // URL backend Spring Boot
 
 ReactDOM.render(<App />, document.getElementById('root'));

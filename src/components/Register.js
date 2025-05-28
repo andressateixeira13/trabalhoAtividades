@@ -22,7 +22,7 @@ const Register = () => {
 
         try {
             await api.post('/funcionarios', funcionarioData);
-            navigate.push('/funcionarios');
+            navigate.push('/funcionarios/cadastrar');
         } catch (error) {
             console.error('Erro ao registrar funcionário:', error);
         }
