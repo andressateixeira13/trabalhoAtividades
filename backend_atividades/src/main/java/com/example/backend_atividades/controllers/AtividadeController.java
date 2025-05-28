@@ -1,6 +1,7 @@
 package com.example.backend_atividades.controllers;
 
 import com.example.backend_atividades.models.Atividade;
+import com.example.backend_atividades.services.AmbienteService;
 import com.example.backend_atividades.services.AtividadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,8 @@ public class AtividadeController {
 
     @Autowired
     private AtividadeService atividadeService;
+    @Autowired
+    private AmbienteService ambienteService;
 
     @GetMapping
     public List<Atividade> listarAtividades() {
@@ -22,9 +25,8 @@ public class AtividadeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Atividade> buscarAtividadePorId(@PathVariable Long id) {
-        Atividade atividade = atividadeService.buscarAtividadePorId(id);
-        return ResponseEntity.ok(atividade);
+    public Atividade buscarAtividadePorId(@PathVariable Long id) {
+        return this.atividadeService.buscarAtividadePorId(id);
     }
 
     @PostMapping
@@ -33,7 +35,7 @@ public class AtividadeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(novaAtividade);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deletarAtividade(@PathVariable Long id) {
         atividadeService.deletarAtividade(id);
         return ResponseEntity.noContent().build();

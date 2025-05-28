@@ -22,8 +22,7 @@ public class AtividadeService {
     }
 
     public Atividade buscarAtividadePorId(Long id) {
-        return atividadeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Atividade não encontrada"));
+        return this.atividadeRepository.findByIdAAndAmbiente(id);
     }
 
     public void deletarAtividade(Long id) {

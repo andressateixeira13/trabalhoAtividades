@@ -17,17 +17,13 @@ public class Atividade {
 
     private LocalDate data;
 
-    @ManyToOne
     @JoinColumn(name = "tipo_atividade_id", nullable = false)
-    private TipoAtividade tipoAtividade;
+    private Long tipoAtividade;
 
-    @ManyToOne
     @JoinColumn(name = "funcionario_id", nullable = false)
-    private Funcionario funcionario;
-
-    @ManyToOne
+    private Long funcionario;
     @JoinColumn(name = "ambiente_id", nullable = false)
-    private Ambiente ambiente;
+    private Long ambiente;
 
     public Atividade() {
     }
@@ -64,27 +60,27 @@ public class Atividade {
         this.data = data;
     }
 
-    public TipoAtividade getTipoAtividade() {
+    public Long getTipoAtividade() {
         return tipoAtividade;
     }
 
-    public void setTipoAtividade(TipoAtividade tipoAtividade) {
+    public void setTipoAtividade(Long tipoAtividade) {
         this.tipoAtividade = tipoAtividade;
     }
 
-    public Funcionario getFuncionario() {
+    public Long getFuncionario() {
         return funcionario;
     }
 
-    public void setFuncionario(Funcionario funcionario) {
+    public void setFuncionario(Long funcionario) {
         this.funcionario = funcionario;
     }
 
-    public Ambiente getAmbiente() {
+    public Long getAmbiente() {
         return ambiente;
     }
 
-    public void setAmbiente(Ambiente ambiente) {
+    public void setAmbiente(Long ambiente) {
         this.ambiente = ambiente;
     }
 }

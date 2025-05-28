@@ -23,5 +23,7 @@ public class AmbienteService {
     public void excluirAmbiente(Long codAmbiente) {
         ambienteRepository.deleteById(codAmbiente);
     }
+
+
 }
 
