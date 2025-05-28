@@ -1,10 +1,28 @@
 package com.example.backend_atividades.models;
 
-import java.awt.*;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Retorno {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codRetorno;
-    private TextArea descricao;
+
+    @Column(columnDefinition = "TEXT")
+    private String descricao;
+
     private String situacao;
-    private Image foto;
+
+    @Lob
+    private byte[] foto;
+
+    @ManyToOne
+    private Atividade atividade;
 }

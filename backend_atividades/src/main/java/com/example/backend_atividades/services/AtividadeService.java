@@ -16,7 +16,6 @@ public class AtividadeService {
     public List<Atividade> listarAtividades() {
         return atividadeRepository.findAll();
     }
-
     public Atividade salvarAtividade(Atividade atividade) {
         return atividadeRepository.save(atividade);
     }

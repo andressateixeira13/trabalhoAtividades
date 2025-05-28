@@ -1,9 +1,10 @@
--- Criação das tabelas
+-- Criação da tabela de tipos de atividade
 CREATE TABLE TipoAtividade (
                                codTipo SERIAL PRIMARY KEY,
                                nome VARCHAR(100) NOT NULL
 );
 
+-- Criação da tabela de ambientes
 CREATE TABLE Ambiente (
                           codAmb SERIAL PRIMARY KEY,
                           rua VARCHAR(100) NOT NULL,
@@ -16,6 +17,7 @@ CREATE TABLE Ambiente (
                           setor VARCHAR(50)
 );
 
+-- Criação da tabela de funcionários
 CREATE TABLE Funcionario (
                              codFunc SERIAL PRIMARY KEY,
                              nome VARCHAR(100) NOT NULL,
@@ -27,19 +29,21 @@ CREATE TABLE Funcionario (
                              email VARCHAR(100) NOT NULL
 );
 
+-- Criação da tabela de atividades
 CREATE TABLE Atividade (
                            codAtiv SERIAL PRIMARY KEY,
                            nomeAtiv VARCHAR(100) NOT NULL,
                            descricao TEXT,
-                           data DATE NOT NULL,
+                           data DATE,
                            codTipo INT NOT NULL,
                            codFunc INT NOT NULL,
-                           codAmb INT NOT NULL,
+                           codAmb INT,
                            CONSTRAINT fk_tipo_atividade FOREIGN KEY (codTipo) REFERENCES TipoAtividade (codTipo),
                            CONSTRAINT fk_funcionario FOREIGN KEY (codFunc) REFERENCES Funcionario (codFunc),
                            CONSTRAINT fk_ambiente FOREIGN KEY (codAmb) REFERENCES Ambiente (codAmb)
 );
 
+-- Criação da tabela de retornos (status das atividades)
 CREATE TABLE Retorno (
                          codRetorno SERIAL PRIMARY KEY,
                          situacao VARCHAR(50) NOT NULL,
@@ -49,6 +53,7 @@ CREATE TABLE Retorno (
                          CONSTRAINT fk_atividade_retorno FOREIGN KEY (codAtiv) REFERENCES Atividade (codAtiv)
 );
 
+-- Criação da tabela de feedbacks
 CREATE TABLE Feedback (
                           codFeedback SERIAL PRIMARY KEY,
                           descricao TEXT,
@@ -56,7 +61,7 @@ CREATE TABLE Feedback (
                           CONSTRAINT fk_atividade_feedback FOREIGN KEY (codAtiv) REFERENCES Atividade (codAtiv)
 );
 
--- Indexes para desempenho
+-- Indexes para melhorar a performance em consultas
 CREATE INDEX idx_atividade_tipo ON Atividade (codTipo);
 CREATE INDEX idx_atividade_funcionario ON Atividade (codFunc);
 CREATE INDEX idx_atividade_ambiente ON Atividade (codAmb);
