@@ -23,6 +23,48 @@ public class Retorno {
     @Lob
     private byte[] foto;
 
-    @ManyToOne
-    private Atividade atividade;
+    public Long getAtividade() {
+        return atividade;
+    }
+
+    public void setAtividade(Long atividade) {
+        this.atividade = atividade;
+    }
+
+    @JoinColumn(name = "atividade_id", nullable = false)
+    private Long atividade;
+
+    public Long getCodRetorno() {
+        return codRetorno;
+    }
+
+    public void setCodRetorno(Long codRetorno) {
+        this.codRetorno = codRetorno;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getSituacao() {
+        return situacao;
+    }
+
+    public void setSituacao(String situacao) {
+        this.situacao = situacao;
+    }
+
+    public byte[] getFoto() {
+        return foto;
+    }
+
+    public void setFoto(byte[] foto) {
+        this.foto = foto;
+    }
+
+
 }

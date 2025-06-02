@@ -32,6 +32,7 @@ public class AutenticacaoController {
             User user = (User) at.getPrincipal();
             String token = this.tokenServiceJWT.gerarToken(user);
 
+
             DadosTokenJWT dadosToken = new DadosTokenJWT(token, dados.cpf());
             System.out.println(dadosToken);
 
