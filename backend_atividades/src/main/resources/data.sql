@@ -35,30 +35,17 @@ CREATE TABLE Atividade (
                            nomeAtiv VARCHAR(100) NOT NULL,
                            descricao TEXT,
                            data DATE,
+                           situacao VARCHAR(50) NOT NULL,
+                           descricaoSituacao TEXT,
+                           foto BYTEA,
+                           feedback TEXT,
+                           recorrencia SERIAL,
                            codTipo INT NOT NULL,
                            codFunc INT NOT NULL,
                            codAmb INT,
                            CONSTRAINT fk_tipo_atividade FOREIGN KEY (codTipo) REFERENCES TipoAtividade (codTipo),
                            CONSTRAINT fk_funcionario FOREIGN KEY (codFunc) REFERENCES Funcionario (codFunc),
                            CONSTRAINT fk_ambiente FOREIGN KEY (codAmb) REFERENCES Ambiente (codAmb)
-);
-
--- Criação da tabela de retornos (status das atividades)
-CREATE TABLE Retorno (
-                         codRetorno SERIAL PRIMARY KEY,
-                         situacao VARCHAR(50) NOT NULL,
-                         descricao TEXT,
-                         foto BYTEA,
-                         codAtiv INT NOT NULL,
-                         CONSTRAINT fk_atividade_retorno FOREIGN KEY (codAtiv) REFERENCES Atividade (codAtiv)
-);
-
--- Criação da tabela de feedbacks
-CREATE TABLE Feedback (
-                          codFeedback SERIAL PRIMARY KEY,
-                          descricao TEXT,
-                          codAtiv INT NOT NULL,
-                          CONSTRAINT fk_atividade_feedback FOREIGN KEY (codAtiv) REFERENCES Atividade (codAtiv)
 );
 
 -- Indexes para melhorar a performance em consultas

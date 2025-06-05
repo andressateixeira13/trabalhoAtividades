@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/tipoatividade")
 public class TipoAtividadeController {
@@ -30,5 +32,11 @@ public class TipoAtividadeController {
     public ResponseEntity<Void> excluirTipoAtividade(@PathVariable Long codTipoAtividade) {
         tipoAtividadeService.excluirTipoAtividade(codTipoAtividade);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TipoAtividade>> listarTodos() {
+        List<TipoAtividade> tipos = tipoAtividadeService.listarTodos();
+        return ResponseEntity.ok(tipos);
     }
 }

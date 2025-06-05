@@ -6,11 +6,14 @@ import com.example.backend_atividades.repositories.AmbienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AmbienteService {
 
     @Autowired
     private AmbienteRepository ambienteRepository;
+
 
     public Ambiente criarAmbiente(Ambiente ambiente) {
         return ambienteRepository.save(ambiente);
@@ -24,6 +27,6 @@ public class AmbienteService {
         ambienteRepository.deleteById(codAmbiente);
     }
 
-
+    public List<Ambiente> listarAmbientes() {return ambienteRepository.findAll();}
 }
 

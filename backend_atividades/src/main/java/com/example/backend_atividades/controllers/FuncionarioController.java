@@ -26,10 +26,27 @@ public class FuncionarioController {
         return ResponseEntity.created(uri).body(novoFuncionario);
     }
 
-    @GetMapping("{cod}")
-    public DadosUsuario findById(@PathVariable Long cod){
-        return this.funcionarioService.findFuncionario(cod);
+    @PutMapping("{cod}")
+    public ResponseEntity<Funcionario> atualizar(@PathVariable Long cod, @RequestBody @Valid Funcionario funcionarioAtualizado) {
+        Funcionario atualizado = funcionarioService.atualizar(cod, funcionarioAtualizado);
+        return ResponseEntity.ok(atualizado);
     }
+
+    @DeleteMapping("{cod}")
+    public ResponseEntity<Void> deletar(@PathVariable Long cod) {
+        funcionarioService.deletar(cod);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("{cpf}")
+    public ResponseEntity<Funcionario> findByCpf(@PathVariable String cpf) {
+        Funcionario funcionario = funcionarioService.findByCpf(cpf);
+        if (funcionario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(funcionario);
+    }
+
 
     @GetMapping("/list")
     public List<DadosUsuario> findAll(){

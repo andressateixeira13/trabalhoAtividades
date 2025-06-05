@@ -17,16 +17,20 @@ public class Atividade {
 
     private LocalDate data;
 
-    @JoinColumn(name = "tipo_atividade_id", nullable = false)
+    private String situacao; // status preenchido pelo funcionário
+
+    @Column(columnDefinition = "TEXT")
+    private String descricaoSituacao; // preenchido pelo funcionário
+
+    @Lob
+    private byte[] foto; // preenchido pelo funcionário
+
+    @Column(columnDefinition = "TEXT")
+    private String feedback;
+
     private Long tipoAtividade;
-
-    @JoinColumn(name = "funcionario_id", nullable = false)
     private Long funcionario;
-    @JoinColumn(name = "ambiente_id", nullable = false)
     private Long ambiente;
-
-    public Atividade() {
-    }
 
     public Long getId() {
         return id;
@@ -58,6 +62,38 @@ public class Atividade {
 
     public void setData(LocalDate data) {
         this.data = data;
+    }
+
+    public String getSituacao() {
+        return situacao;
+    }
+
+    public void setSituacao(String situacao) {
+        this.situacao = situacao;
+    }
+
+    public String getDescricaoSituacao() {
+        return descricaoSituacao;
+    }
+
+    public void setDescricaoSituacao(String descricaoSituacao) {
+        this.descricaoSituacao = descricaoSituacao;
+    }
+
+    public byte[] getFoto() {
+        return foto;
+    }
+
+    public void setFoto(byte[] foto) {
+        this.foto = foto;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
     }
 
     public Long getTipoAtividade() {

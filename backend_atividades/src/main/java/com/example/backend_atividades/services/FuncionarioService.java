@@ -29,7 +29,31 @@ public class FuncionarioService {
         this.funcionarioRepository.save(funcionario);
     }
 
-   public DadosUsuario findFuncionario(Long cod){
+    public Funcionario atualizar(Long cod, Funcionario dadosAtualizados) {
+        Funcionario existente = funcionarioRepository.findById(cod)
+                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
+
+        existente.setNome(dadosAtualizados.getNome());
+        existente.setCpf(dadosAtualizados.getCpf());
+        existente.setCargo(dadosAtualizados.getCargo());
+
+        return funcionarioRepository.save(existente);
+    }
+
+    public void deletar(Long cod) {
+        Funcionario existente = funcionarioRepository.findById(cod)
+                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
+
+        funcionarioRepository.delete(existente);
+    }
+
+    public Funcionario findByCpf(String cpf) {
+        return funcionarioRepository.findByCpf(cpf);
+    }
+
+
+
+    public DadosUsuario findFuncionario(Long cod){
         Funcionario funcionario = this.funcionarioRepository.getReferenceById(cod);
         return new DadosUsuario(funcionario);
    }

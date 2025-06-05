@@ -5,6 +5,8 @@ import com.example.backend_atividades.repositories.TipoAtividadeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class TipoAtividadeService {
 
@@ -22,5 +24,10 @@ public class TipoAtividadeService {
     public void excluirTipoAtividade(Long codTipoAtividade) {
         tipoAtividadeRepository.deleteById(codTipoAtividade);
     }
+
+    public List<TipoAtividade> listarTodos() {
+        return tipoAtividadeRepository.findAll();
+    }
+
 }
 

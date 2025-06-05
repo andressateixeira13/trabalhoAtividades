@@ -16,12 +16,47 @@ public class AtividadeService {
     public List<Atividade> listarAtividades() {
         return atividadeRepository.findAll();
     }
+
     public Atividade salvarAtividade(Atividade atividade) {
         return atividadeRepository.save(atividade);
     }
 
+    public Atividade atualizarAtividade(Long id, Atividade novaAtividade) {
+        Atividade existente = atividadeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Atividade não encontrada com id: " + id));
+
+        existente.setNomeAtiv(novaAtividade.getNomeAtiv());
+        existente.setDescricao(novaAtividade.getDescricao());
+        existente.setData(novaAtividade.getData());
+        existente.setTipoAtividade(novaAtividade.getTipoAtividade());
+        existente.setFuncionario(novaAtividade.getFuncionario());
+        existente.setAmbiente(novaAtividade.getAmbiente());
+
+        return atividadeRepository.save(existente);
+    }
+
+    public Atividade registrarRetorno(Long id, Atividade dados) {
+        Atividade existente = atividadeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Atividade não encontrada com id: " + id));
+
+        existente.setSituacao(dados.getSituacao());
+        existente.setDescricaoSituacao(dados.getDescricaoSituacao());
+        existente.setFoto(dados.getFoto());
+
+        return atividadeRepository.save(existente);
+    }
+
+    public Atividade registrarFeedback(Long id, Atividade dados) {
+        Atividade existente = atividadeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Atividade não encontrada com id: " + id));
+
+        existente.setFeedback(dados.getFeedback());
+
+        return atividadeRepository.save(existente);
+    }
+
     public Atividade buscarAtividadePorId(Long id) {
-        return this.atividadeRepository.findByIdAAndAmbiente(id);
+        return atividadeRepository.findByIdAAndAmbiente(id);
     }
 
     public void deletarAtividade(Long id) {
