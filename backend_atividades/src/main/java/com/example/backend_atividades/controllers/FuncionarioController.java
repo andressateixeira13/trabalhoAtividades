@@ -20,7 +20,7 @@ public class FuncionarioController {
     }
 
     @PostMapping
-    public ResponseEntity cadastrar(@RequestBody @Valid Funcionario novoFuncionario, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<Funcionario> cadastrar(@RequestBody @Valid Funcionario novoFuncionario, UriComponentsBuilder uriBuilder) {
         this.funcionarioService.cadastrar(novoFuncionario);
         URI uri = uriBuilder.path("/{cod}").buildAndExpand(novoFuncionario.getCodFunc()).toUri();
         return ResponseEntity.created(uri).body(novoFuncionario);
@@ -41,6 +41,15 @@ public class FuncionarioController {
     @GetMapping("{cpf}")
     public ResponseEntity<Funcionario> findByCpf(@PathVariable String cpf) {
         Funcionario funcionario = funcionarioService.findByCpf(cpf);
+        if (funcionario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(funcionario);
+    }
+
+    @GetMapping("/funcionario/{id}")
+    public ResponseEntity<Funcionario> buscarPorId(@PathVariable Long id) {
+        Funcionario funcionario = funcionarioService.buscarPorId(id);
         if (funcionario == null) {
             return ResponseEntity.notFound().build();
         }

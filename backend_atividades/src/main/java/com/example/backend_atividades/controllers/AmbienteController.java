@@ -34,10 +34,21 @@ public class AmbienteController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Ambiente> buscarPorId(@PathVariable Long id) {
+        Ambiente ambiente = ambienteService.buscarPorId(id);
+        if (ambiente == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(ambiente);
+    }
+
+
     @GetMapping
     public List<Ambiente> listarAmbientes() {
         return ambienteService.listarAmbientes();
     }
+
 
 }
 

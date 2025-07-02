@@ -28,5 +28,10 @@ public class AmbienteService {
     }
 
     public List<Ambiente> listarAmbientes() {return ambienteRepository.findAll();}
+
+    public Ambiente buscarPorId(Long id) {
+        return ambienteRepository.findById(id).orElse(null);
+    }
+
 }
 

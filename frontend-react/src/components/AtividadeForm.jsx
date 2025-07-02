@@ -20,9 +20,22 @@ const AtividadeForm = () => {
     const [filtroFuncionario, setFiltroFuncionario] = useState('');
 
     const token = localStorage.getItem('token');
+    const usuario = JSON.parse(localStorage.getItem('usuario')); 
     const config = { headers: { Authorization: `Bearer ${token}` } };
 
     useEffect(() => {
+        if (!token || !usuario) {
+            alert("Usuário não autenticado.");
+            navigate('/login');
+            return;
+        }
+
+        if (usuario.permissao !== 'ROLE_GESTOR') {
+            alert("Apenas gestores podem criar atividades.");
+            navigate('/');
+            return;
+        }
+
         const fetchDados = async () => {
             try {
                 const [tipos, funcs, ambs] = await Promise.all([
@@ -30,6 +43,11 @@ const AtividadeForm = () => {
                     axios.get('http://localhost:8080/funcionarios/list', config),
                     axios.get('http://localhost:8080/ambiente', config)
                 ]);
+
+                console.log("Tipos de Atividade:", tipos.data);
+                console.log("Funcionários:", funcs.data);
+                console.log("Ambientes:", ambs.data);
+
                 setTiposAtividade(tipos.data);
                 setFuncionarios(funcs.data);
                 setAmbientes(ambs.data);
@@ -43,30 +61,37 @@ const AtividadeForm = () => {
     }, []);
 
     const handleCriarAtividade = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.post('http://localhost:8080/atividades', {
-                nomeAtiv,
-                descricao,
-                data,
-                codTipo : tipoAtividade,
-                codFunc : funcionario,
-                codAmb : ambiente
-            }, config);
+    e.preventDefault();
 
-            alert("Atividade criada com sucesso!");
-            navigate('/atividades');
-        } catch (error) {
-            alert("Erro ao criar atividade.");
-            console.error(error);
-        }
+    const payload = {
+        nomeAtiv,
+        descricao,
+        data,
+        tipoAtividade: Number(tipoAtividade),
+        funcionario: Number(funcionario),
+        ambiente: Number(ambiente)
     };
+
+    console.log("Enviando atividade:", payload);
+
+    try {
+        await axios.post('http://localhost:8080/atividades', payload, config);
+        alert("Atividade criada com sucesso!");
+        navigate('/atividades');
+    } catch (error) {
+        alert("Erro ao criar atividade. Verifique se você tem permissão.");
+        console.error("Erro ao criar atividade:", error.response || error);
+    }
+};
+
 
     const handleAdicionarTipo = async () => {
         if (!novoTipo) return;
         try {
             const response = await axios.post('http://localhost:8080/tipoatividade', { nome: novoTipo }, config);
+            console.log("Tipo criado:", response.data);
             setTiposAtividade([...tiposAtividade, response.data]);
+            setTipoAtividade(response.data.id); 
             setNovoTipo('');
             setMostrarNovoTipo(false);
         } catch (error) {
@@ -160,8 +185,15 @@ const AtividadeForm = () => {
 
                 <div className="mb-3">
                     <label className="form-label">Funcionário:</label>
+                    <input
+                        type="text"
+                        className="form-control mb-2"
+                        placeholder="Buscar funcionário"
+                        value={filtroFuncionario}
+                        onChange={e => setFiltroFuncionario(e.target.value)}
+                    />
                     <select
-                        className="form-select mt-2"
+                        className="form-select"
                         value={funcionario}
                         onChange={e => setFuncionario(e.target.value)}
                         required

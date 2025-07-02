@@ -16,24 +16,41 @@ const AtividadeDetail = () => {
     const token = localStorage.getItem('token');
 
     useEffect(() => {
-        const fetchAtividade = async () => {
-            try {
-                const response = await axios.get(`http://localhost:8080/atividades/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setAtividade(response.data);
-                setFormData(response.data);
-            } catch (error) {
-                console.error(`Erro ao carregar atividade ${id}:`, error);
-            }
-        };
-        fetchAtividade();
-    }, [id, token]);
+    const fetchAtividade = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/atividades/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+            const atividadeData = response.data;
+
+            const [funcionarioResp, ambienteResp] = await Promise.all([
+                axios.get(`http://localhost:8080/funcionarios/funcionario/${atividadeData.funcionario}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get(`http://localhost:8080/ambiente/${atividadeData.ambiente}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
+
+            const atividadeCompleta = {
+                ...atividadeData,
+                funcionario: funcionarioResp.data,
+                ambiente: ambienteResp.data
+            };
+
+            console.log('Atividade com dados completos:', atividadeCompleta);
+
+            setAtividade(atividadeCompleta);
+            setFormData(atividadeCompleta);
+        } catch (error) {
+            console.error(`Erro ao carregar atividade ${id}:`, error);
+        }
     };
+
+    fetchAtividade();
+}, [id, token]);
+
 
     const handleSalvarAlteracoes = async () => {
         try {
