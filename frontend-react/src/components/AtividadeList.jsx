@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const AtividadeList = () => {
     const [atividades, setAtividades] = useState([]);
-    const [dadosCompletos, setDadosCompletos] = useState([]);
+    const [abaAtiva, setAbaAtiva] = useState('feedback');
     const navigate = useNavigate();
 
     const usuario = JSON.parse(localStorage.getItem('usuario'));
@@ -30,7 +30,6 @@ const AtividadeList = () => {
 
                 const atividadesRaw = response.data;
 
-                // Buscando dados detalhados de ambiente e funcionário
                 const atividadesDetalhadas = await Promise.all(atividadesRaw.map(async (atv) => {
                     let ambiente = null;
                     let funcionario = null;
@@ -70,10 +69,47 @@ const AtividadeList = () => {
         if (usuario && token) {
             fetchData();
         } else {
-            console.warn("Dados do usuário ou token não encontrados.");
             navigate('/');
         }
     }, [usuario, token, navigate]);
+
+    // Separar atividades por categorias
+    const hoje = new Date().toISOString().split('T')[0];
+
+    const aguardandoFeedback = atividades.filter(atv => atv.situacao);
+    const pendentes = atividades.filter(atv => !atv.situacao && atv.data >= hoje);
+    const atrasadas = atividades.filter(atv => !atv.situacao && atv.data < hoje);
+
+    const renderCards = (atividadesFiltradas) => {
+    if (!atividadesFiltradas || atividadesFiltradas.length === 0) {
+        return <p className="text-muted">Nenhuma atividade nesta categoria.</p>;
+    }
+
+    return (
+        <div className="row gx-4 gy-4">
+            {atividadesFiltradas.map((atv) => (
+                <div key={atv.id} className="col-12 col-md-6 col-lg-4 d-flex">
+                    <div className="card shadow-sm w-100">
+                        <div className="card-body d-flex flex-column">
+                            <h5 className="card-title">{atv.nomeAtiv}</h5>
+                            <p><strong>Descrição:</strong> {atv.descricao}</p>
+                            <p><strong>Data:</strong> {atv.data}</p>
+                            <p><strong>Ambiente:</strong> {atv.ambiente?.rua || 'Desconhecido'}</p>
+                            <p><strong>Funcionário:</strong> {atv.funcionario?.nome || 'Desconhecido'}</p>
+                            <div className="mt-auto">
+                                <button className="btn btn-outline-primary w-100" onClick={() => navigate(`/atividade/${atv.id}`)}>
+                                    Ver Detalhes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+
 
     return (
         <div className="container py-4 bg-light min-vh-100">
@@ -90,41 +126,21 @@ const AtividadeList = () => {
                 </div>
             )}
 
-            <h4 className="text-muted mb-3">
-                {usuario?.permissao === 'ROLE_GESTOR' ? 'Todas as Atividades' : 'Minhas Atividades'}
-            </h4>
+            <div className="d-flex gap-3 border-bottom mb-3">
+                <button className={`btn ${abaAtiva === 'feedback' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setAbaAtiva('feedback')}>
+                    Concluídas
+                </button>
+                <button className={`btn ${abaAtiva === 'pendentes' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setAbaAtiva('pendentes')}>
+                    Pendentes
+                </button>
+                <button className={`btn ${abaAtiva === 'atrasadas' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setAbaAtiva('atrasadas')}>
+                    Atrasadas
+                </button>
+            </div>
 
-            {atividades.length > 0 ? (
-                <div className="row">
-                    {atividades.map((atv) => (
-                        <div key={atv.id} className="col-md-6 col-lg-4 mb-4">
-                            <div className="card shadow-sm bg-white border-0 h-100">
-                                <div className="card-body d-flex flex-column">
-                                    <h5 className="card-title text-dark">{atv.nomeAtiv}</h5>
-                                    <p className="card-text"><strong>Descrição:</strong> {atv.descricao}</p>
-                                    <p className="card-text"><strong>Data:</strong> {atv.data}</p>
-                                    <p className="card-text">
-                                        <strong>Ambiente:</strong> {atv.ambiente?.rua || 'Não encontrado'}
-                                    </p>
-                                    <p className="card-text">
-                                        <strong>Funcionário:</strong> {atv.funcionario?.nome || 'Não encontrado'}
-                                    </p>
-                                    <div className="mt-auto">
-                                        <button
-                                            className="btn btn-outline-secondary w-100"
-                                            onClick={() => navigate(`/atividade/${atv.id}`)}
-                                        >
-                                            Ver Detalhes
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <p className="text-muted">Nenhuma atividade encontrada.</p>
-            )}
+            {abaAtiva === 'feedback' && renderCards(aguardandoFeedback)}
+            {abaAtiva === 'pendentes' && renderCards(pendentes)}
+            {abaAtiva === 'atrasadas' && renderCards(atrasadas)}
         </div>
     );
 };

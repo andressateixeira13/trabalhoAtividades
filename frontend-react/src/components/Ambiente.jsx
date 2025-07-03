@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import axios from "axios"
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Ambiente = () => {
+    const navigate = useNavigate();
+
     const [ambientes, setAmbientes] = useState([]);
     const [rua, setRua] = useState('');
     const [cep, setCep] = useState('');
@@ -12,12 +15,25 @@ const Ambiente = () => {
     const [predio, setPredio] = useState('');
     const [setor, setSetor] = useState('');
 
+    const getAuthConfig = () => {
+        const token = localStorage.getItem('token');
+        return {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        };
+    };
+
     const fetchAmbientes = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/ambiente');
+            const response = await axios.get('http://localhost:8080/ambiente', getAuthConfig());
             setAmbientes(response.data);
         } catch (error) {
             console.error('Erro ao carregar ambientes:', error);
+            if (error.response?.status === 403) {
+                alert('Acesso negado. Faça login novamente.');
+                navigate('/login');
+            }
         }
     };
 
@@ -40,11 +56,12 @@ const Ambiente = () => {
         };
 
         try {
-            await axios.post('http://localhost:8080/ambiente', ambienteData);
+            await axios.post('http://localhost:8080/ambiente', ambienteData, getAuthConfig());
             fetchAmbientes();
             clearForm();
         } catch (error) {
             console.error('Erro ao criar ambiente:', error);
+            alert("Erro ao salvar ambiente.");
         }
     };
 
@@ -61,7 +78,7 @@ const Ambiente = () => {
 
     const deleteAmbiente = async (id) => {
         try {
-            await axios.delete(`http://localhost:8080/ambiente/${id}`);
+            await axios.delete(`http://localhost:8080/ambiente/${id}`, getAuthConfig());
             fetchAmbientes();
         } catch (error) {
             console.error(`Erro ao excluir ambiente ${id}:`, error);
@@ -70,102 +87,51 @@ const Ambiente = () => {
 
     return (
         <div className="container my-4">
+            <div className="d-flex justify-content-start mb-3">
+                <button className="btn btn-outline-primary" onClick={() => navigate('/atividades')}>
+                    Voltar
+                </button>
+            </div>
+
             <h2 className="mb-4 text-secondary">Gerenciar Ambientes</h2>
 
             <form onSubmit={handleSubmit} className="bg-light p-4 rounded shadow-sm mb-5">
                 <div className="row g-3">
                     <div className="col-md-4">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Rua"
-                            value={rua}
-                            onChange={(e) => setRua(e.target.value)}
-                            required
-                        />
+                        <input type="text" className="form-control" placeholder="Rua" value={rua} onChange={e => setRua(e.target.value)} required />
                     </div>
                     <div className="col-md-2">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="CEP"
-                            value={cep}
-                            onChange={(e) => setCep(e.target.value)}
-                            required
-                        />
+                        <input type="text" className="form-control" placeholder="CEP" value={cep} onChange={e => setCep(e.target.value)} required />
                     </div>
                     <div className="col-md-3">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Bairro"
-                            value={bairro}
-                            onChange={(e) => setBairro(e.target.value)}
-                            required
-                        />
+                        <input type="text" className="form-control" placeholder="Bairro" value={bairro} onChange={e => setBairro(e.target.value)} required />
                     </div>
                     <div className="col-md-1">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Número"
-                            value={numero}
-                            onChange={(e) => setNumero(e.target.value)}
-                            required
-                        />
+                        <input type="text" className="form-control" placeholder="Número" value={numero} onChange={e => setNumero(e.target.value)} required />
                     </div>
                     <div className="col-md-2">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Sala"
-                            value={sala}
-                            onChange={(e) => setSala(e.target.value)}
-                        />
+                        <input type="text" className="form-control" placeholder="Sala" value={sala} onChange={e => setSala(e.target.value)} />
                     </div>
                     <div className="col-md-3">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Complemento"
-                            value={complemento}
-                            onChange={(e) => setComplemento(e.target.value)}
-                        />
+                        <input type="text" className="form-control" placeholder="Complemento" value={complemento} onChange={e => setComplemento(e.target.value)} />
                     </div>
                     <div className="col-md-3">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Prédio"
-                            value={predio}
-                            onChange={(e) => setPredio(e.target.value)}
-                        />
+                        <input type="text" className="form-control" placeholder="Prédio" value={predio} onChange={e => setPredio(e.target.value)} />
                     </div>
                     <div className="col-md-3">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Setor"
-                            value={setor}
-                            onChange={(e) => setSetor(e.target.value)}
-                            required
-                        />
+                        <input type="text" className="form-control" placeholder="Setor" value={setor} onChange={e => setSetor(e.target.value)} required />
                     </div>
                 </div>
 
                 <div className="mt-4">
-                    <button type="submit" className="btn btn-dark">
-                        Salvar Ambiente
-                    </button>
+                    <button type="submit" className="btn btn-dark">Salvar Ambiente</button>
                 </div>
             </form>
 
             <h3 className="mb-3 text-secondary">Ambientes Cadastrados</h3>
 
             <div className="row row-cols-1 row-cols-md-2 g-4">
-                {ambientes.length === 0 && (
-                    <p className="text-muted">Nenhum ambiente cadastrado.</p>
-                )}
+                {ambientes.length === 0 && <p className="text-muted">Nenhum ambiente cadastrado.</p>}
                 {ambientes.map((ambiente) => (
                     <div key={ambiente.id} className="col">
                         <div className="card shadow-sm h-100">
@@ -178,12 +144,7 @@ const Ambiente = () => {
                                 {ambiente.complemento && <p className="card-text mb-1"><strong>Complemento:</strong> {ambiente.complemento}</p>}
                                 {ambiente.predio && <p className="card-text mb-1"><strong>Prédio:</strong> {ambiente.predio}</p>}
                                 <p className="card-text"><strong>Setor:</strong> {ambiente.setor}</p>
-                                <button
-                                    className="btn btn-sm btn-outline-danger"
-                                    onClick={() => deleteAmbiente(ambiente.id)}
-                                >
-                                    Excluir
-                                </button>
+                                <button className="btn btn-sm btn-outline-danger" onClick={() => deleteAmbiente(ambiente.codAmb)}>Excluir</button>
                             </div>
                         </div>
                     </div>
