@@ -44,7 +44,7 @@ public class AmbienteController {
     }
 
 
-    @GetMapping("/list")
+    @GetMapping
     public List<Ambiente> listarAmbientes() {
         return ambienteService.listarAmbientes();
     }
