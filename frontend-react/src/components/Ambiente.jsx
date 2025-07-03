@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import axios from "axios"
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from "axios";
 
 const Ambiente = () => {
+    const navigate = useNavigate();
     const [ambientes, setAmbientes] = useState([]);
     const [rua, setRua] = useState('');
     const [cep, setCep] = useState('');
@@ -11,41 +13,14 @@ const Ambiente = () => {
     const [complemento, setComplemento] = useState('');
     const [predio, setPredio] = useState('');
     const [setor, setSetor] = useState('');
+    const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
 
-    const fetchAmbientes = async () => {
-        try {
-            const response = await axios.get('http://localhost:8080/ambiente');
-            setAmbientes(response.data);
-        } catch (error) {
-            console.error('Erro ao carregar ambientes:', error);
-        }
-    };
+    const token = localStorage.getItem('token');
+    const config = { headers: { Authorization: `Bearer ${token}` } };
 
-    useEffect(() => {
-        fetchAmbientes();
-    }, []);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const ambienteData = {
-            rua,
-            cep,
-            bairro,
-            numero,
-            sala,
-            complemento,
-            predio,
-            setor
-        };
-
-        try {
-            await axios.post('http://localhost:8080/ambiente', ambienteData);
-            fetchAmbientes();
-            clearForm();
-        } catch (error) {
-            console.error('Erro ao criar ambiente:', error);
-        }
+    const mostrarMensagem = (texto, tipo = 'sucesso') => {
+        setMensagem({ texto, tipo });
+        setTimeout(() => setMensagem({ texto: '', tipo: '' }), 4000);
     };
 
     const clearForm = () => {
@@ -59,97 +34,89 @@ const Ambiente = () => {
         setSetor('');
     };
 
+    const fetchAmbientes = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/ambiente', config);
+            setAmbientes(response.data);
+        } catch (error) {
+            console.error('Erro ao carregar ambientes:', error);
+            mostrarMensagem('Erro ao carregar ambientes.', 'erro');
+        }
+    };
+
+    useEffect(() => {
+        fetchAmbientes();
+    }, []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const ambienteData = { rua, cep, bairro, numero, sala, complemento, predio, setor };
+
+        try {
+            await axios.post('http://localhost:8080/ambiente', ambienteData, config);
+            fetchAmbientes();
+            clearForm();
+            mostrarMensagem('Ambiente cadastrado com sucesso!');
+        } catch (error) {
+            console.error('Erro ao criar ambiente:', error);
+            mostrarMensagem('Erro ao cadastrar ambiente.', 'erro');
+        }
+    };
+
     const deleteAmbiente = async (id) => {
         try {
-            await axios.delete(`http://localhost:8080/ambiente/${id}`);
+            await axios.delete(`http://localhost:8080/ambiente/${id}`, config);
             fetchAmbientes();
+            mostrarMensagem('Ambiente excluído com sucesso!');
         } catch (error) {
             console.error(`Erro ao excluir ambiente ${id}:`, error);
+            mostrarMensagem('Erro ao excluir ambiente.', 'erro');
         }
     };
 
     return (
         <div className="container my-4">
+
+            <div className="d-flex justify-content-start mb-3">
+                <button className="btn btn-outline-secondary" onClick={() => navigate('/atividades')}>
+                    Voltar
+                </button>
+            </div>
+
             <h2 className="mb-4 text-secondary">Gerenciar Ambientes</h2>
+
+            {mensagem.texto && (
+                <div className={`alert ${mensagem.tipo === 'erro' ? 'alert-danger' : 'alert-success'}`} role="alert">
+                    {mensagem.texto}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="bg-light p-4 rounded shadow-sm mb-5">
                 <div className="row g-3">
+                    {/* campos de formulário */}
                     <div className="col-md-4">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Rua"
-                            value={rua}
-                            onChange={(e) => setRua(e.target.value)}
-                            required
-                        />
+                        <input type="text" className="form-control" placeholder="Rua" value={rua} onChange={(e) => setRua(e.target.value)} required />
                     </div>
                     <div className="col-md-2">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="CEP"
-                            value={cep}
-                            onChange={(e) => setCep(e.target.value)}
-                            required
-                        />
+                        <input type="text" className="form-control" placeholder="CEP" value={cep} onChange={(e) => setCep(e.target.value)} required />
                     </div>
                     <div className="col-md-3">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Bairro"
-                            value={bairro}
-                            onChange={(e) => setBairro(e.target.value)}
-                            required
-                        />
+                        <input type="text" className="form-control" placeholder="Bairro" value={bairro} onChange={(e) => setBairro(e.target.value)} required />
                     </div>
                     <div className="col-md-1">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Número"
-                            value={numero}
-                            onChange={(e) => setNumero(e.target.value)}
-                            required
-                        />
+                        <input type="text" className="form-control" placeholder="Número" value={numero} onChange={(e) => setNumero(e.target.value)} required />
                     </div>
                     <div className="col-md-2">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Sala"
-                            value={sala}
-                            onChange={(e) => setSala(e.target.value)}
-                        />
+                        <input type="text" className="form-control" placeholder="Sala" value={sala} onChange={(e) => setSala(e.target.value)} />
                     </div>
                     <div className="col-md-3">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Complemento"
-                            value={complemento}
-                            onChange={(e) => setComplemento(e.target.value)}
-                        />
+                        <input type="text" className="form-control" placeholder="Complemento" value={complemento} onChange={(e) => setComplemento(e.target.value)} />
                     </div>
                     <div className="col-md-3">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Prédio"
-                            value={predio}
-                            onChange={(e) => setPredio(e.target.value)}
-                        />
+                        <input type="text" className="form-control" placeholder="Prédio" value={predio} onChange={(e) => setPredio(e.target.value)} />
                     </div>
                     <div className="col-md-3">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Setor"
-                            value={setor}
-                            onChange={(e) => setSetor(e.target.value)}
-                            required
-                        />
+                        <input type="text" className="form-control" placeholder="Setor" value={setor} onChange={(e) => setSetor(e.target.value)} required />
                     </div>
                 </div>
 
@@ -167,7 +134,7 @@ const Ambiente = () => {
                     <p className="text-muted">Nenhum ambiente cadastrado.</p>
                 )}
                 {ambientes.map((ambiente) => (
-                    <div key={ambiente.id} className="col">
+                    <div key={ambiente.codAmb} className="col">
                         <div className="card shadow-sm h-100">
                             <div className="card-body">
                                 <h5 className="card-title text-dark">
@@ -180,7 +147,7 @@ const Ambiente = () => {
                                 <p className="card-text"><strong>Setor:</strong> {ambiente.setor}</p>
                                 <button
                                     className="btn btn-sm btn-outline-danger"
-                                    onClick={() => deleteAmbiente(ambiente.id)}
+                                    onClick={() => deleteAmbiente(ambiente.codAmb)}
                                 >
                                     Excluir
                                 </button>
