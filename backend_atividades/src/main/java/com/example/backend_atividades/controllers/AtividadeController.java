@@ -37,7 +37,7 @@ public class AtividadeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(novaAtividade);
     }
 
-    @PutMapping("/atualizar/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Atividade> atualizarAtividade(@PathVariable Long id, @RequestBody Atividade atividadeAtualizada) {
         Atividade atividade = atividadeService.atualizarAtividade(id, atividadeAtualizada);
         return ResponseEntity.ok(atividade);

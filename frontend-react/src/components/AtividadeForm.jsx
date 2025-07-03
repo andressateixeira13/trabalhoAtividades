@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 
@@ -7,9 +7,7 @@ const AtividadeForm = () => {
 
     const [nomeAtiv, setNomeAtiv] = useState('');
     const [descricao, setDescricao] = useState('');
-    const [dataInicio, setDataInicio] = useState('');
-    const [dataFim, setDataFim] = useState('');
-    const [frequencia, setFrequencia] = useState(''); 
+    const [data, setData] = useState('');
     const [tipoAtividade, setTipoAtividade] = useState('');
     const [funcionario, setFuncionario] = useState('');
     const [ambiente, setAmbiente] = useState('');
@@ -43,11 +41,15 @@ const AtividadeForm = () => {
                 const [tipos, funcs, ambs] = await Promise.all([
                     axios.get('http://localhost:8080/tipoatividade', config),
                     axios.get('http://localhost:8080/funcionarios/list', config),
-                    axios.get('http://localhost:8080/ambiente/list', config)
+                    axios.get('http://localhost:8080/ambiente', config)
                 ]);
 
+                console.log("Tipos de Atividade:", tipos.data);
+                console.log("Funcionários:", funcs.data);
+                console.log("Ambientes:", ambs.data);
+
                 setTiposAtividade(tipos.data);
-                setFuncionarios(funcs.data.filter(f => f.permissao === 'ROLE_FUNCIONARIO'));
+                setFuncionarios(funcs.data);
                 setAmbientes(ambs.data);
             } catch (error) {
                 alert("Erro ao carregar dados.");
@@ -58,88 +60,53 @@ const AtividadeForm = () => {
         fetchDados();
     }, []);
 
-    // Função para adicionar dias, semanas ou meses a uma data
-    const adicionarData = (data, freq) => {
-        const novaData = new Date(data);
-        if (freq === 'diaria') {
-            novaData.setDate(novaData.getDate() + 1);
-        } else if (freq === 'semanal') {
-            novaData.setDate(novaData.getDate() + 7);
-        } else if (freq === 'mensal') {
-            novaData.setMonth(novaData.getMonth() + 1);
-        }
-        return novaData;
-    };
-
-    const formatarData = (data) => {
-        // Formata Date para yyyy-mm-dd
-        return data.toISOString().split('T')[0];
-    };
-
     const handleCriarAtividade = async (e) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        if (!dataInicio) {
-            alert("Informe a data inicial.");
-            return;
-        }
-        if (dataFim && dataFim < dataInicio) {
-            alert("Data final deve ser igual ou maior que a inicial.");
-            return;
-        }
-        if (dataFim && !frequencia) {
-            alert("Informe a frequência para a recorrência.");
-            return;
-        }
-
-        try {
-            if (dataFim) {
-                // Cria múltiplas atividades conforme recorrência
-                let currentDate = new Date(dataInicio);
-                const finalDate = new Date(dataFim);
-
-                while (currentDate <= finalDate) {
-                    const payload = {
-                        nomeAtiv,
-                        descricao,
-                        data: formatarData(currentDate),
-                        tipoAtividade: Number(tipoAtividade),
-                        funcionario: Number(funcionario),
-                        ambiente: Number(ambiente)
-                    };
-                    await axios.post('http://localhost:8080/atividades', payload, config);
-                    currentDate = adicionarData(currentDate, frequencia);
-                }
-                alert("Atividades recorrentes criadas com sucesso!");
-            } else {
-                const payload = {
-                    nomeAtiv,
-                    descricao,
-                    data: dataInicio,
-                    tipoAtividade: Number(tipoAtividade),
-                    funcionario: Number(funcionario),
-                    ambiente: Number(ambiente)
-                };
-                await axios.post('http://localhost:8080/atividades', payload, config);
-                alert("Atividade criada com sucesso!");
-            }
-            navigate('/atividades');
-        } catch (error) {
-            alert("Erro ao criar atividade. Verifique os dados.");
-            console.error("Erro ao criar atividade:", error.response || error);
-        }
+    const payload = {
+        nomeAtiv,
+        descricao,
+        data,
+        tipoAtividade: Number(tipoAtividade),
+        funcionario: Number(funcionario),
+        ambiente: Number(ambiente)
     };
+
+    console.log("Enviando atividade:", payload);
+
+    try {
+        await axios.post('http://localhost:8080/atividades', payload, config);
+        alert("Atividade criada com sucesso!");
+        navigate('/atividades');
+    } catch (error) {
+        alert("Erro ao criar atividade. Verifique se você tem permissão.");
+        console.error("Erro ao criar atividade:", error.response || error);
+    }
+};
+
 
     const handleAdicionarTipo = async () => {
         if (!novoTipo) return;
         try {
             const response = await axios.post('http://localhost:8080/tipoatividade', { nome: novoTipo }, config);
+            console.log("Tipo criado:", response.data);
             setTiposAtividade([...tiposAtividade, response.data]);
-            setTipoAtividade(response.data.codTipo);
+            setTipoAtividade(response.data.id); 
             setNovoTipo('');
             setMostrarNovoTipo(false);
         } catch (error) {
             alert("Erro ao adicionar tipo.");
+            console.error(error);
+        }
+    };
+
+    const handleExcluirTipo = async (id) => {
+        if (!window.confirm("Deseja realmente excluir este tipo?")) return;
+        try {
+            await axios.delete(`http://localhost:8080/tipoatividade/${id}`, config);
+            setTiposAtividade(tiposAtividade.filter(t => t.id !== id));
+        } catch (error) {
+            alert("Erro ao excluir tipo.");
             console.error(error);
         }
     };
@@ -150,12 +117,6 @@ const AtividadeForm = () => {
 
     return (
         <div className="container py-4 bg-light min-vh-100">
-            <div className="d-flex justify-content-start mb-3">
-                <button className="btn btn-outline-secondary" onClick={() => navigate('/atividades')}>
-                Voltar
-                </button>
-            </div>
-
             <h2 className="mb-4 text-secondary">Nova Atividade</h2>
             <form className="bg-white p-4 rounded shadow-sm" onSubmit={handleCriarAtividade}>
                 <div className="mb-3">
@@ -179,43 +140,15 @@ const AtividadeForm = () => {
                 </div>
 
                 <div className="mb-3">
-                    <label className="form-label">Data Inicial:</label>
+                    <label className="form-label">Data:</label>
                     <input
                         type="date"
                         className="form-control"
-                        value={dataInicio}
-                        onChange={e => setDataInicio(e.target.value)}
+                        value={data}
+                        onChange={e => setData(e.target.value)}
                         required
                     />
                 </div>
-
-                <div className="mb-3">
-                    <label className="form-label">Data Final (opcional para recorrência):</label>
-                    <input
-                        type="date"
-                        className="form-control"
-                        value={dataFim}
-                        onChange={e => setDataFim(e.target.value)}
-                        min={dataInicio}
-                    />
-                </div>
-
-                {dataFim && (
-                    <div className="mb-3">
-                        <label className="form-label">Frequência de Repetição:</label>
-                        <select
-                            className="form-select"
-                            value={frequencia}
-                            onChange={e => setFrequencia(e.target.value)}
-                            required
-                        >
-                            <option value="">Selecione</option>
-                            <option value="diaria">Diária</option>
-                            <option value="semanal">Semanal</option>
-                            <option value="mensal">Mensal</option>
-                        </select>
-                    </div>
-                )}
 
                 <div className="mb-3">
                     <label className="form-label">Tipo de Atividade:</label>
@@ -228,16 +161,10 @@ const AtividadeForm = () => {
                         >
                             <option value="">Selecione</option>
                             {tiposAtividade.map(tipo => (
-                                <option key={tipo.codTipo} value={tipo.codTipo}>
-                                    {tipo.nome}
-                                </option>
+                                <option key={tipo.id} value={tipo.id}>{tipo.nome}</option>
                             ))}
                         </select>
-                        <button
-                            type="button"
-                            className="btn btn-outline-secondary"
-                            onClick={() => setMostrarNovoTipo(!mostrarNovoTipo)}
-                        >
+                        <button type="button" className="btn btn-outline-secondary" onClick={() => setMostrarNovoTipo(!mostrarNovoTipo)}>
                             {mostrarNovoTipo ? 'Cancelar' : 'Novo Tipo'}
                         </button>
                     </div>
@@ -251,19 +178,20 @@ const AtividadeForm = () => {
                                 value={novoTipo}
                                 onChange={e => setNovoTipo(e.target.value)}
                             />
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={handleAdicionarTipo}
-                            >
-                                Salvar
-                            </button>
+                            <button type="button" className="btn btn-secondary" onClick={handleAdicionarTipo}>Salvar</button>
                         </div>
                     )}
                 </div>
 
                 <div className="mb-3">
                     <label className="form-label">Funcionário:</label>
+                    <input
+                        type="text"
+                        className="form-control mb-2"
+                        placeholder="Buscar funcionário"
+                        value={filtroFuncionario}
+                        onChange={e => setFiltroFuncionario(e.target.value)}
+                    />
                     <select
                         className="form-select"
                         value={funcionario}
@@ -272,9 +200,7 @@ const AtividadeForm = () => {
                     >
                         <option value="">Selecione</option>
                         {funcionariosFiltrados.map(func => (
-                            <option key={func.cod} value={func.cod}>
-                                {func.nome}
-                            </option>
+                            <option key={func.codFunc} value={func.codFunc}>{func.nome}</option>
                         ))}
                     </select>
                 </div>
@@ -291,8 +217,7 @@ const AtividadeForm = () => {
                             <option value="">Selecione</option>
                             {ambientes.map(amb => (
                                 <option key={amb.codAmb} value={amb.codAmb}>
-                                    {amb.rua}, {amb.numero} - 
-                                    {amb.setor} - Sala: {amb.sala}, Prédio: {amb.predio}
+                                    {amb.rua}, {amb.numero}
                                 </option>
                             ))}
                         </select>
