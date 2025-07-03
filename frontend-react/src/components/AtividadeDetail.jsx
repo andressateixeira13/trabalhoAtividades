@@ -12,51 +12,97 @@ const AtividadeDetail = () => {
     const [status, setStatus] = useState('');
     const [descricaoRetorno, setDescricaoRetorno] = useState('');
 
+    const [tiposAtividade, setTiposAtividade] = useState([]);
+    const [funcionarios, setFuncionarios] = useState([]);
+    const [ambientes, setAmbientes] = useState([]);
+
     const usuario = JSON.parse(localStorage.getItem('usuario'));
     const token = localStorage.getItem('token');
+    const config = { headers: { Authorization: `Bearer ${token}` } };
 
+    
     useEffect(() => {
-    const fetchAtividade = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8080/atividades/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+        const fetchDados = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/atividades/${id}`, config);
+                const atividadeData = response.data;
 
-            const atividadeData = response.data;
+                const [tiposResp, funcsResp, ambsResp] = await Promise.all([
+                    axios.get('http://localhost:8080/tipoatividade', config),
+                    axios.get('http://localhost:8080/funcionarios/list', config),
+                    axios.get('http://localhost:8080/ambiente/list', config)
+                ]);
 
-            const [funcionarioResp, ambienteResp] = await Promise.all([
-                axios.get(`http://localhost:8080/funcionarios/funcionario/${atividadeData.funcionario}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                }),
-                axios.get(`http://localhost:8080/ambiente/${atividadeData.ambiente}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                })
-            ]);
+                const funcionariosFiltrados = funcsResp.data.filter(f => f.permissao === 'ROLE_FUNCIONARIO');
 
-            const atividadeCompleta = {
-                ...atividadeData,
-                funcionario: funcionarioResp.data,
-                ambiente: ambienteResp.data
-            };
+                setTiposAtividade(tiposResp.data);
+                setFuncionarios(funcionariosFiltrados);
+                setAmbientes(ambsResp.data);
 
-            console.log('Atividade com dados completos:', atividadeCompleta);
+                const tipoSelecionado = tiposResp.data.find(t => t.codTipo === atividadeData.tipoAtividade);
+                const funcionarioSelecionado = funcionariosFiltrados.find(f => f.cod === atividadeData.funcionario);
+                const ambienteSelecionado = ambsResp.data.find(a => a.codAmb === atividadeData.ambiente);
 
-            setAtividade(atividadeCompleta);
-            setFormData(atividadeCompleta);
-        } catch (error) {
-            console.error(`Erro ao carregar atividade ${id}:`, error);
+                const atividadeCompleta = {
+                    ...atividadeData,
+                    tipoAtividade: tipoSelecionado || null,
+                    funcionario: funcionarioSelecionado || null,
+                    ambiente: ambienteSelecionado || null
+                };
+
+                setAtividade(atividadeCompleta);
+                setFormData(atividadeCompleta);
+
+                if (atividadeData.feedback) {
+                    setFeedback(atividadeData.feedback);
+                }
+
+                if (atividadeData.retorno) {
+                    setStatus(atividadeData.retorno.situacao);
+                    setDescricaoRetorno(atividadeData.retorno.descricaoSituacao);
+                }
+            } catch (error) {
+                console.error(`Erro ao carregar atividade ${id}:`, error);
+            }
+        };
+
+        fetchDados();
+    }, [id, token]);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSelectChange = (e) => {
+        const { name, value } = e.target;
+
+        if (name === 'tipoAtividade') {
+            const selecionado = tiposAtividade.find(t => t.codTipo === Number(value)) || null;
+            setFormData(prev => ({ ...prev, tipoAtividade: selecionado }));
+        } else if (name === 'funcionario') {
+            const selecionado = funcionarios.find(f => f.cod === Number(value)) || null;
+            setFormData(prev => ({ ...prev, funcionario: selecionado }));
+        } else if (name === 'ambiente') {
+            const selecionado = ambientes.find(a => a.codAmb === Number(value)) || null;
+            setFormData(prev => ({ ...prev, ambiente: selecionado }));
         }
     };
 
-    fetchAtividade();
-}, [id, token]);
-
-
     const handleSalvarAlteracoes = async () => {
         try {
-            await axios.put(`http://localhost:8080/atividades/${id}`, formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const dadosParaEnviar = {
+                ...formData,
+                tipoAtividade: formData.tipoAtividade?.codTipo,
+                funcionario: formData.funcionario?.cod,
+                ambiente: formData.ambiente?.codAmb,
+            };
+
+            await axios.put(`http://localhost:8080/atividades/atualizar/${id}`, dadosParaEnviar, config);
+
             alert('Atividade atualizada com sucesso!');
             setModoEdicao(false);
             setAtividade(formData);
@@ -66,11 +112,12 @@ const AtividadeDetail = () => {
         }
     };
 
+
     const handleExcluir = async () => {
         const confirm = window.confirm('Tem certeza que deseja excluir esta atividade?');
         if (!confirm) return;
         try {
-            await axios.delete(`http://localhost:8080/atividades/${id}`, {
+            await axios.delete(`http://localhost:8080/atividades/delete/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             alert('Atividade excluída com sucesso.');
@@ -82,7 +129,7 @@ const AtividadeDetail = () => {
 
     const handleEnviarFeedback = async () => {
         try {
-            await axios.post(`http://localhost:8080/atividades/${id}/feedback`, { feedback }, {
+            await axios.put(`http://localhost:8080/atividades/${id}/feedback`, { feedback }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             alert('Feedback enviado com sucesso!');
@@ -94,7 +141,7 @@ const AtividadeDetail = () => {
 
     const handleEnviarRetorno = async () => {
         try {
-            await axios.post(`http://localhost:8080/atividades/${id}/retorno`, {
+            await axios.put(`http://localhost:8080/atividades/${id}/retorno`, {
                 situacao: status,
                 descricao: descricaoRetorno
             }, {
@@ -114,6 +161,13 @@ const AtividadeDetail = () => {
 
     return (
         <div className="container py-4">
+
+            <div className="d-flex justify-content-start mb-3">
+                <button className="btn btn-outline-secondary" onClick={() => navigate('/atividades')}>
+                Voltar
+                </button>
+            </div>
+
             <div className="card bg-light text-dark shadow">
                 <div className="card-body">
                     <h3 className="card-title mb-4">Detalhes da Atividade</h3>
@@ -122,31 +176,97 @@ const AtividadeDetail = () => {
                         <>
                             <div className="mb-3">
                                 <label className="form-label">Nome</label>
-                                <input className="form-control" name="nomeAtiv" value={formData.nomeAtiv} onChange={handleInputChange} />
+                                <input
+                                    className="form-control"
+                                    name="nomeAtiv"
+                                    value={formData.nomeAtiv || ''}
+                                    onChange={handleInputChange}
+                                />
                             </div>
                             <div className="mb-3">
                                 <label className="form-label">Descrição</label>
-                                <textarea className="form-control" name="descricao" value={formData.descricao} onChange={handleInputChange} />
+                                <textarea
+                                    className="form-control"
+                                    name="descricao"
+                                    value={formData.descricao || ''}
+                                    onChange={handleInputChange}
+                                />
                             </div>
                             <div className="mb-3">
                                 <label className="form-label">Data</label>
-                                <input className="form-control" type="date" name="data" value={formData.data} onChange={handleInputChange} />
-                            </div>
-                            <div className="mb-3">
-                                <label className="form-label">Tipo Atividade</label>
-                                <input className="form-control" value={formData.tipoAtividade?.nome || ''} onChange={(e) => setFormData(prev => ({ ...prev, tipoAtividade: { ...prev.tipoAtividade, nome: e.target.value } }))} />
-                            </div>
-                            <div className="mb-3">
-                                <label className="form-label">Funcionário</label>
-                                <input className="form-control" value={formData.funcionario?.nome || ''} onChange={(e) => setFormData(prev => ({ ...prev, funcionario: { ...prev.funcionario, nome: e.target.value } }))} />
-                            </div>
-                            <div className="mb-3">
-                                <label className="form-label">Ambiente</label>
-                                <input className="form-control" value={formData.ambiente?.rua || ''} onChange={(e) => setFormData(prev => ({ ...prev, ambiente: { ...prev.ambiente, rua: e.target.value } }))} />
+                                <input
+                                    className="form-control"
+                                    type="date"
+                                    name="data"
+                                    value={formData.data || ''}
+                                    onChange={handleInputChange}
+                                />
                             </div>
 
-                            <button className="btn btn-success me-2" onClick={handleSalvarAlteracoes}>Salvar</button>
-                            <button className="btn btn-secondary" onClick={() => setModoEdicao(false)}>Cancelar</button>
+                            {/* Select Tipo Atividade */}
+                            <div className="mb-3">
+                                <label className="form-label">Tipo de Atividade</label>
+                                <select
+                                    className="form-select"
+                                    name="tipoAtividade"
+                                    value={formData.tipoAtividade?.codTipo || ''}
+                                    onChange={handleSelectChange}
+                                    required
+                                >
+                                    <option value="">Selecione</option>
+                                    {tiposAtividade.map(tipo => (
+                                        <option key={tipo.codTipo} value={tipo.codTipo}>
+                                            {tipo.nome}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Select Funcionário */}
+                            <div className="mb-3">
+                                <label className="form-label">Funcionário</label>
+                                <select
+                                    className="form-select"
+                                    name="funcionario"
+                                    value={formData.funcionario?.cod || ''}
+                                    onChange={handleSelectChange}
+                                    required
+                                >
+                                    <option value="">Selecione</option>
+                                    {funcionarios.map(func => (
+                                        <option key={func.cod} value={func.cod}>
+                                            {func.nome}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Select Ambiente */}
+                            <div className="mb-3">
+                                <label className="form-label">Ambiente</label>
+                                <select
+                                    className="form-select"
+                                    name="ambiente"
+                                    value={formData.ambiente?.codAmb || ''}
+                                    onChange={handleSelectChange}
+                                    required
+                                >
+                                    <option value="">Selecione</option>
+                                    {ambientes.map(amb => (
+                                        <option key={amb.codAmb} value={amb.codAmb}>
+                                            {amb.rua}, {amb.numero} - 
+                                            {amb.setor} - Sala: {amb.sala}, Prédio: {amb.predio}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <button className="btn btn-success me-2" onClick={handleSalvarAlteracoes}>
+                                Salvar
+                            </button>
+                            <button className="btn btn-secondary" onClick={() => setModoEdicao(false)}>
+                                Cancelar
+                            </button>
                         </>
                     ) : (
                         <>
@@ -163,28 +283,42 @@ const AtividadeDetail = () => {
 
             {usuario?.permissao === 'ROLE_GESTOR' && (
                 <div className="mt-4">
+                    {atividade?.retorno && (
+                        <div className="card bg-white p-3 mb-4 border border-secondary">
+                            <h5 className="text-secondary">Retorno do Funcionário</h5>
+                            <p><strong>Status:</strong> {atividade.retorno.situacao}</p>
+                            <p><strong>Descrição:</strong> {atividade.retorno.descricao}</p>
+                        </div>
+                    )}
+
                     {!modoEdicao && (
                         <button className="btn btn-warning me-2" onClick={() => setModoEdicao(true)}>Editar</button>
                     )}
                     <button className="btn btn-danger" onClick={handleExcluir}>Excluir</button>
 
-                    <div className="mt-4 card bg-light p-3">
-                        <h5>Adicionar Feedback</h5>
-                        <textarea
-                            className="form-control mb-2"
-                            value={feedback}
-                            onChange={(e) => setFeedback(e.target.value)}
-                            placeholder="Digite o feedback"
-                            rows={3}
-                        />
-                        <button className="btn btn-primary" onClick={handleEnviarFeedback}>Enviar Feedback</button>
-                    </div>
+                
+                        <div className="mt-4 card bg-light p-3">
+                            <h5>{feedback ? 'Editar Feedback' : 'Adicionar Feedback'}</h5>
+                            <textarea
+                                className="form-control mb-2"
+                                value={feedback}
+                                onChange={(e) => setFeedback(e.target.value)}
+                                placeholder="Digite o feedback"
+                                rows={3}
+                            />
+                            <button className="btn btn-primary" onClick={handleEnviarFeedback}>
+                                {feedback ? 'Atualizar Feedback' : 'Enviar Feedback'}
+                            </button>
+                        </div>
+                    
                 </div>
             )}
 
+
+
             {usuario?.permissao === 'ROLE_FUNCIONARIO' && (
                 <div className="mt-4 card bg-light p-3">
-                    <h5>Registrar Retorno</h5>
+                    <h5>{status || descricaoRetorno ? 'Editar Retorno' : 'Registrar Retorno'}</h5>
                     <select className="form-select mb-2" value={status} onChange={(e) => setStatus(e.target.value)}>
                         <option value="">Selecione o status</option>
                         <option value="REALIZADA">REALIZADA</option>
@@ -198,9 +332,12 @@ const AtividadeDetail = () => {
                         placeholder="Descrição do retorno"
                         rows={3}
                     />
-                    <button className="btn btn-primary" onClick={handleEnviarRetorno}>Enviar Retorno</button>
+                    <button className="btn btn-primary" onClick={handleEnviarRetorno}>
+                        {status || descricaoRetorno ? 'Atualizar Retorno' : 'Enviar Retorno'}
+                    </button>
                 </div>
             )}
+
         </div>
     );
 };
