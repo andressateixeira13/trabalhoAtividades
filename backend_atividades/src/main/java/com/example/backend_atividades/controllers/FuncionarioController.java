@@ -56,7 +56,6 @@ public class FuncionarioController {
         return ResponseEntity.ok(funcionario);
     }
 
-
     @GetMapping("/list")
     public List<DadosUsuario> findAll(){
         return this.funcionarioService.findAllFuncionarios();

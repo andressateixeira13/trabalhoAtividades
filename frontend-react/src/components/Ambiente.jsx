@@ -26,7 +26,7 @@ const Ambiente = () => {
 
     const fetchAmbientes = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/ambiente', getAuthConfig());
+            const response = await axios.get('http://localhost:8080/ambiente/list', getAuthConfig());
             setAmbientes(response.data);
         } catch (error) {
             console.error('Erro ao carregar ambientes:', error);

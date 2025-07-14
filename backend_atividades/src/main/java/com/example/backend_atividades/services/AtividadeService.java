@@ -2,10 +2,12 @@ package com.example.backend_atividades.services;
 
 import com.example.backend_atividades.models.Atividade;
 import com.example.backend_atividades.repositories.AtividadeRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AtividadeService {
@@ -13,8 +15,13 @@ public class AtividadeService {
     @Autowired
     private AtividadeRepository atividadeRepository;
 
+    private final String baseUrl = "http://localhost:8080/uploads/";
+
     public List<Atividade> listarAtividades() {
-        return atividadeRepository.findAll();
+        List<Atividade> atividades = atividadeRepository.findAll();
+        return atividades.stream()
+                .map(this::mapFotoParaUrl)
+                .collect(Collectors.toList());
     }
 
     public Atividade salvarAtividade(Atividade atividade) {
@@ -35,13 +42,14 @@ public class AtividadeService {
         return atividadeRepository.save(existente);
     }
 
+    @Transactional
     public Atividade registrarRetorno(Long id, Atividade dados) {
         Atividade existente = atividadeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Atividade não encontrada com id: " + id));
 
         existente.setSituacao(dados.getSituacao());
         existente.setDescricaoSituacao(dados.getDescricaoSituacao());
-        existente.setFoto(dados.getFoto());
+        existente.setFoto(dados.getFoto()); // campo byte[] ou Blob
 
         return atividadeRepository.save(existente);
     }
@@ -56,14 +64,41 @@ public class AtividadeService {
     }
 
     public Atividade buscarAtividadePorId(Long id) {
-        return atividadeRepository.findByIdAAndAmbiente(id);
+        Atividade atividade = atividadeRepository.findByIdAAndAmbiente(id);
+        return mapFotoParaUrl(atividade);
     }
+
+    public List<Atividade> listarAtividadesPorFuncionario(String cpfFuncionario) {
+        List<Atividade> atividades = atividadeRepository.findByFuncionarioCpf(cpfFuncionario);
+        return atividades.stream()
+                .map(this::mapFotoParaUrl)
+                .collect(Collectors.toList());
+    }
+
+    // Método auxiliar para substituir o nome do arquivo pela URL completa da foto
+    private Atividade mapFotoParaUrl(Atividade atividade) {
+        if (atividade != null && atividade.getFoto() != null) {
+            atividade.setFoto(baseUrl + atividade.getFoto());
+        }
+        return atividade;
+    }
+
 
     public void deletarAtividade(Long id) {
         atividadeRepository.deleteById(id);
     }
 
-    public List<Atividade> listarAtividadesPorFuncionario(String cpfFuncionario) {
-        return atividadeRepository.findByFuncionarioCpf(cpfFuncionario);
+    public List<Atividade> listarAtividadesPorFuncionarioSemFoto(String cpfFuncionario) {
+        List<Atividade> atividades = atividadeRepository.findByFuncionarioCpf(cpfFuncionario);
+        return atividades.stream().map(atividade -> {
+            atividade.setFoto(null); // Remove conteúdo da imagem
+            return atividade;
+        }).collect(Collectors.toList());
     }
+    public Atividade buscarAtividadeCompletaPorId(Long id) {
+        return atividadeRepository.findById(id)
+                .map(this::mapFotoParaUrl)
+                .orElse(null);
+    }
+
 }

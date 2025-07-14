@@ -22,8 +22,10 @@ public class Atividade {
     @Column(columnDefinition = "TEXT")
     private String descricaoSituacao; // preenchido pelo funcionário
 
-    @Lob
-    private byte[] foto; // preenchido pelo funcionário
+
+    @Column(name = "foto")
+    private String foto;
+
 
     @Column(columnDefinition = "TEXT")
     private String feedback;
@@ -80,11 +82,11 @@ public class Atividade {
         this.descricaoSituacao = descricaoSituacao;
     }
 
-    public byte[] getFoto() {
+    public String getFoto() {
         return foto;
     }
 
-    public void setFoto(byte[] foto) {
+    public void setFoto(String foto) {
         this.foto = foto;
     }
 
